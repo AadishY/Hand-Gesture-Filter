@@ -1,0 +1,22 @@
+{
+  "name": "hand-gesture-filter",
+  "version": "1.0.0",
+  "description": "Real-time 3D Augmented Reality Hand Gesture Filter with MediaPipe AI & 10 Curated Visual Shaders",
+  "scripts": {
+    "dev": "serve .",
+    "start": "serve .",
+    "build": "echo 'Static build ready'"
+  },
+  "keywords": [
+    "augmented-reality",
+    "mediapipe",
+    "hand-tracking",
+    "shaders",
+    "canvas2d"
+  ],
+  "author": "AadishY",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}

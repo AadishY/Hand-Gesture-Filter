@@ -3,10 +3,21 @@
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6%2B-F7DF1E?logo=javascript&logoColor=black)](#)
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-Hands%20AI-00C4B4?logo=google&logoColor=white)](#)
 [![HTML5 Canvas](https://img.shields.io/badge/HTML5-Canvas%202D-E34F26?logo=html5&logoColor=white)](#)
-[![CSS3](https://img.shields.io/badge/CSS3-Frosted%20Glassmorphism-1572B6?logo=css3&logoColor=white)](#)
+[![Vercel Ready](https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel&logoColor=white)](#-deploy-to-vercel)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-Ready-F38020?logo=cloudflare&logoColor=white)](#-deploy-to-cloudflare-pages)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 An ultra-responsive, real-time **Augmented Reality Hand Gesture Filter** powered by Google MediaPipe AI Vision and vanilla WebGL/Canvas 2D image processing. Raise both hands to spawn an interactive 3D perspective AR portal quad between your fingertips, tilt in 3D space with volumetric drop shadows, cycle curated visual shaders by touching your fingertips together, and experience futuristic optical filters with zero latency.
+
+---
+
+## ⚡ 1-Click Cloud Deployments
+
+Deploy your own live AR portal instance in seconds with zero configuration:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAadishY%2FHand-Gesture-Filter)
+&nbsp;&nbsp;
+[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://dash.cloudflare.com/?to=/:account/pages/new)
 
 ---
 
@@ -61,7 +72,10 @@ An ultra-responsive, real-time **Augmented Reality Hand Gesture Filter** powered
 ## 🛠️ Project Structure
 
 ```text
-web/
+├── vercel.json         # Vercel deployment config, security headers & static caching
+├── _headers            # Cloudflare Pages security & permissions headers (camera=*)
+├── wrangler.toml       # Cloudflare Workers & Pages deployment configuration
+├── package.json        # Standard project metadata & dev scripts
 ├── index.html          # Semantic HTML5 UI, frosted glass HUD, tag cloud & modals
 ├── styles.css          # Ultra-premium CSS3 design system with frosted glass tokens
 ├── README.md           # Project documentation and quickstart guide
@@ -77,14 +91,30 @@ web/
 
 ---
 
-## 🚀 Quickstart Guide
+## ☁️ Deployment Instructions
+
+### 1. Deploy to Vercel
+1. Import the repository [https://github.com/AadishY/Hand-Gesture-Filter](https://github.com/AadishY/Hand-Gesture-Filter) on [Vercel Dashboard](https://vercel.com/new).
+2. Framework Preset: **Other** / **Static HTML**.
+3. Root Directory: `./` (or leave default).
+4. Click **Deploy**. Vercel will automatically apply `vercel.json` with camera permission policies and immutable caching headers.
+
+### 2. Deploy to Cloudflare Pages
+1. In the [Cloudflare Dashboard](https://dash.cloudflare.com/), go to **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
+2. Select repository `Hand-Gesture-Filter`.
+3. Build Settings:
+   - Framework preset: **None**
+   - Build output directory: `.`
+4. Click **Save and Deploy**. Cloudflare Pages will automatically read `_headers` and serve all static AR assets via Cloudflare's global edge CDN with `Permissions-Policy: camera=*`.
+
+---
+
+## 💻 Running Locally
 
 ### Prerequisites
 - Modern web browser (Google Chrome, Microsoft Edge, Brave, Firefox, or Safari) with webcam support.
-- Local static file server (Python, Node.js `serve`, VS Code Live Server, etc.).
 
-### Running Locally
-
+### Steps
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/AadishY/Hand-Gesture-Filter.git
@@ -93,17 +123,15 @@ web/
 
 2. **Start a local HTTP server**:
    ```bash
-   # Python 3
-   python -m http.server 8000 --directory web
+   # Using Python 3
+   python -m http.server 8000
 
    # Or using Node.js
-   npx serve web
+   npx serve .
    ```
 
-3. **Open in your browser**:
-   Navigate to [**http://localhost:8000**](http://localhost:8000).
-
-4. **Allow camera permissions** and click **"START AR EXPERIENCE"**.
+3. **Open in browser**:
+   Visit [**http://localhost:8000**](http://localhost:8000), allow camera access, and click **"START AR EXPERIENCE"**.
 
 ---
 
