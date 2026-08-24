@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gesture Filters - AR Optical Portal</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- MediaPipe Hands & Camera Utils Scripts from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <!-- Three.js CDN for Exact Frosted Glass WebGL Shader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Full-Screen Viewport Canvas -->
+    <div class="fullscreen-viewport">
+        <!-- Hidden video feed -->
+        <video id="webcam-video" playsinline autoplay muted></video>
+
+        <!-- Fullscreen Canvas -->
+        <canvas id="render-canvas"></canvas>
+    </div>
+
+    <!-- Minimalist Welcome & Info Screen -->
+    <div id="welcome-screen" class="welcome-screen">
+        <!-- Top Navigation Bar -->
+        <header class="welcome-topbar">
+            <div class="top-brand">
+                <div class="brand-logo-icon">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <span class="brand-title-text">Gesture Filters</span>
+            </div>
+
+            <div class="top-links">
+                <!-- GitHub Only -->
+                <a href="https://github.com" id="github-link" class="top-social-icon" target="_blank" rel="noopener noreferrer" title="GitHub Repository" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                    </svg>
+                </a>
+            </div>
+        </header>
+
+        <!-- Center Guide Content -->
+        <main class="welcome-content">
+            <div class="welcome-guide-box">
+                <div class="guide-header-badge">
+                    <span class="pulse-beacon"></span>
+                    <span>REAL-TIME AR OPTICAL PORTAL</span>
+                </div>
+
+                <h1 class="guide-title">Gesture Filters</h1>
+                
+                <p class="guide-intro">
+                    Interactive Augmented Reality powered by on-device computer vision.
+                    Transform live video inside a perspective portal shaped dynamically between your fingertips.
+                </p>
+
+                <!-- Visual Gesture Cards Grid -->
+                <div class="gesture-cards-grid">
+                    <!-- Gesture 1: Open Portal -->
+                    <div class="gesture-visual-card">
+                        <div class="card-visual-header">
+                            <div class="gesture-sticker">
+                                <span class="sticker-emoji">✋ ✦ ✋</span>
+                            </div>
+                            <span class="step-pill">01</span>
+                        </div>
+                        <div class="card-title">Spawn Portal</div>
+                        <p class="card-desc">
+                            Raise <strong>both hands</strong> with your <strong>index finger & thumb extended</strong>. The optical quadrilateral anchors automatically to your 4 fingertips.
+                        </p>
+                    </div>
+
+                    <!-- Gesture 2: Switch Filter -->
+                    <div class="gesture-visual-card highlight-card">
+                        <div class="card-visual-header">
+                            <div class="gesture-sticker">
+                                <span class="sticker-emoji">➡️ 🤏 ⬅️</span>
+                            </div>
+                            <span class="step-pill">02</span>
+                        </div>
+                        <div class="card-title">Cycle Filters</div>
+                        <p class="card-desc">
+                            Bring your hands <strong>close together</strong> to trigger the next visual filter. Built-in hysteresis prevents accidental skips.
+                        </p>
+                    </div>
+
+                    <!-- Gesture 3: 3D Transform -->
+                    <div class="gesture-visual-card">
+                        <div class="card-visual-header">
+                            <div class="gesture-sticker">
+                                <span class="sticker-emoji">📐 🔄 ↔️</span>
+                            </div>
+                            <span class="step-pill">03</span>
+                        </div>
+                        <div class="card-title">Scale & Perspective</div>
+                        <p class="card-desc">
+                            Move, tilt, or spread your hands apart in 3D space to freely <strong>stretch, rotate, and scale</strong> the live filter perspective.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Curated Shaders Tag Cloud -->
+                <div class="filters-summary-row">
+                    <span class="filter-row-label">10 ULTRA-FAST REAL-TIME OPTICAL & GRAPHICAL SHADERS</span>
+                    <div class="filters-tag-cloud">
+                        <span>🩸 01 Crimson Noir</span>
+                        <span>🌊 02 Liquid Chrome</span>
+                        <span>🧊 03 Crystal Ice</span>
+                        <span>🕳️ 04 Void ASCII</span>
+                        <span>📰 05 Vintage Manga</span>
+                        <span>🩻 06 X-Ray</span>
+                        <span>⌨ 07 HD ASCII</span>
+                        <span>▦ 08 Dither</span>
+                        <span>♨ 09 Thermal</span>
+                        <span>🌸 10 Rosa</span>
+                    </div>
+                </div>
+
+                <!-- Camera Permission Error Banner -->
+                <div id="camera-error-banner" class="camera-error-banner hidden">
+                    <div class="error-icon-box">⚠️</div>
+                    <div class="error-content-box">
+                        <div class="error-title">Camera Access is Disabled</div>
+                        <div class="error-desc" id="camera-error-desc">
+                            Your browser has blocked camera permissions. Please click the lock 🔒 icon in your browser URL bar, set Camera to "Allow", and try again.
+                        </div>
+                        <button id="btn-retry-camera" class="retry-camera-btn">Retry Camera Access</button>
+                    </div>
+                </div>
+
+                <p class="privacy-note">
+                    🔒 Camera stream is processed 100% locally via WebAssembly and is never saved or uploaded.
+                </p>
+
+                <!-- Center Launch / Loading Button -->
+                <div class="cta-container">
+                    <button id="btn-start" class="cta-launch-btn">
+                        <span id="cta-btn-text">START AR EXPERIENCE</span>
+                        <div id="cta-spinner" class="cta-spinner hidden"></div>
+                    </button>
+                    <div id="cta-status-msg" class="cta-status-msg">Click to grant camera permission & launch</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Footer -->
+        <footer class="welcome-footer">
+            <div class="footer-left">
+                <span class="footer-status-dot"></span>
+                <span id="welcome-tracking-status">Hand Tracking Ready</span>
+            </div>
+            <div class="footer-right">
+                <span>GESTURE FILTERS AR</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- In-Experience UI Overlay Layer -->
+    <div id="ui-layer" class="ui-overlay-layer hidden">
+        <!-- Right-Side Frosted Glass Control Dock with Vector SVG Icons -->
+        <div class="liquid-dock">
+            <!-- Filter Dropdown Trigger Button & Popup Menu -->
+            <div class="filter-dropdown-wrapper">
+                <button id="btn-filter-menu" class="glass-btn filter-trigger-btn" title="Select Visual Filter">
+                    <span class="btn-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                            <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                            <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                            <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"></path>
+                        </svg>
+                    </span>
+                </button>
+                <div id="filter-dropdown-menu" class="liquid-glass-menu">
+                    <div class="dropdown-header">
+                        <span>SELECT FILTER</span>
+                    </div>
+                    <div id="filter-options-list" class="filter-options-list">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Snapshot Photo Button -->
+            <button id="btn-snap" class="glass-btn snap-btn" title="Capture Snapshot (Hotkey: C)">
+                <span class="btn-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </span>
+            </button>
+
+            <!-- Hand Skeleton Debug Toggle -->
+            <button id="btn-skeleton" class="glass-btn" title="Toggle Hand Skeleton (Hotkey: S)">
+                <span class="btn-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                        <circle cx="6" cy="6" r="2.5"></circle>
+                        <circle cx="18" cy="6" r="2.5"></circle>
+                        <circle cx="6" cy="18" r="2.5"></circle>
+                        <circle cx="18" cy="18" r="2.5"></circle>
+                    </svg>
+                </span>
+            </button>
+
+            <!-- Sci-Fi Glow Toggle -->
+            <button id="btn-glow" class="glass-btn active" title="Toggle Border Glow Mode (Hotkey: G)">
+                <span class="btn-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                    </svg>
+                </span>
+            </button>
+
+            <!-- Settings / Camera Switch -->
+            <button id="btn-settings" class="glass-btn" title="Settings & Portal Styling (Hotkey: O)">
+                <span class="btn-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </span>
+            </button>
+
+            <!-- Welcome / Help Screen Toggle -->
+            <button id="btn-info-modal" class="glass-btn" title="Project Info & Gestures">
+                <span class="btn-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </span>
+            </button>
+
+            <div class="dock-divider"></div>
+
+            <!-- Hide All UI Button -->
+            <button id="btn-hide-ui" class="glass-btn hide-ui-btn" title="Hide All UI (Hotkey: H)">
+                <span class="btn-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </span>
+            </button>
+        </div>
+
+        <!-- Bottom-Left Frosted Glass Gesture Card -->
+        <div id="gesture-help-panel" class="liquid-glass-card">
+            <div class="card-glass-highlight"></div>
+            
+            <div class="help-header">
+                <div class="active-filter-tag">
+                    <span id="active-filter-badge" class="filter-badge">01</span>
+                    <span id="active-filter-name">Grid Overlay</span>
+                </div>
+                <div id="tracking-status" class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span id="tracking-text">Searching...</span>
+                </div>
+            </div>
+
+            <div class="gesture-instruction-list">
+                <div class="gesture-item">
+                    <span class="gesture-icon">✋</span>
+                    <span><strong>Spawn:</strong> Index & thumb on both hands</span>
+                </div>
+                <div class="gesture-item">
+                    <span class="gesture-icon">🤝</span>
+                    <span><strong>Switch:</strong> Touch index & thumbs between hands</span>
+                </div>
+            </div>
+
+            <!-- Gesture Proximity Progress Bar -->
+            <div class="proximity-container">
+                <div class="proximity-label">
+                    <span>PROXIMITY</span>
+                    <span id="gesture-state-text">IDLE</span>
+                </div>
+                <div class="proximity-track">
+                    <div id="proximity-bar" class="proximity-fill"></div>
+                </div>
+            </div>
+
+            <div class="card-footer-row">
+                <div class="keyboard-shortcuts-hint">
+                    <span>[1-8] Filter</span>
+                    <span>[Space] Next</span>
+                    <span>[C] Snap</span>
+                    <span>[H] Hide</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frosted Glass Eye Restore Button -->
+    <button id="btn-restore-ui" class="liquid-glass-eye-btn" title="Restore Controls (Hotkey: H)">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+    </button>
+
+    <!-- Settings Modal with Interactive Segmented Buttons -->
+    <div id="settings-modal" class="modal-backdrop">
+        <div class="modal-dialog" id="settings-modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Settings & Customization</h3>
+                <button id="btn-close-modal" class="modal-close" title="Close Settings">✕</button>
+            </div>
+
+            <!-- Portal Border Style Segmented Picker -->
+            <div class="setting-row">
+                <div class="setting-label-group">
+                    <span>Portal Border Style</span>
+                    <span id="label-active-style" style="color: var(--neon-cyan); font-family: var(--font-mono); font-size: 0.76rem;">Glow</span>
+                </div>
+                <div class="style-segmented-picker" id="style-segmented-picker">
+                    <button type="button" class="segment-btn active" data-style="glow" id="btn-style-glow">
+                        ✨ Sci-Fi Glow
+                    </button>
+                    <button type="button" class="segment-btn" data-style="white" id="btn-style-white">
+                        ⚪ Clean White
+                    </button>
+                    <button type="button" class="segment-btn" data-style="none" id="btn-style-none">
+                        🚫 Borderless
+                    </button>
+                </div>
+            </div>
+
+            <!-- Portal Thickness Slider -->
+            <div class="setting-row" id="row-thickness">
+                <div class="setting-label-group">
+                    <span>Border Thickness</span>
+                    <span id="val-thickness">2.5 px</span>
+                </div>
+                <input type="range" id="input-thickness" class="slider-input" min="0" max="8" step="0.5" value="2.5">
+            </div>
+
+            <!-- Anchor Nodes Toggle -->
+            <div class="setting-row-inline">
+                <span>Show Fingertip Anchor Dots</span>
+                <input type="checkbox" id="check-anchors" class="toggle-checkbox" checked>
+            </div>
+
+            <!-- Elastic Membrane & Bending Toggle -->
+            <div class="setting-row-inline">
+                <span>Elastic Membrane & Curved Bending</span>
+                <input type="checkbox" id="check-bending" class="toggle-checkbox" checked>
+            </div>
+
+            <div class="modal-separator"></div>
+
+            <!-- Gesture Sensitivity -->
+            <div class="setting-row">
+                <div class="setting-label-group">
+                    <span>Fingertip Touch Threshold</span>
+                    <span id="val-close-ratio">0.045</span>
+                </div>
+                <input type="range" id="input-close-ratio" class="slider-input" min="0.02" max="0.10" step="0.005" value="0.045">
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-label-group">
+                    <span>Quick Release Re-Arm</span>
+                    <span id="val-open-ratio">0.08</span>
+                </div>
+                <input type="range" id="input-open-ratio" class="slider-input" min="0.05" max="0.16" step="0.005" value="0.08">
+            </div>
+
+            <!-- Camera Device -->
+            <div class="setting-row">
+                <div class="setting-label-group">
+                    <span>Camera Device</span>
+                </div>
+                <select id="camera-select" class="camera-dropdown"></select>
+            </div>
+
+            <div class="modal-separator"></div>
+
+            <!-- Reset Settings to Default Button -->
+            <button type="button" id="btn-reset-settings" class="reset-settings-btn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span>Reset to Factory Defaults</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Snapshot Screen Flash Effect -->
+    <div id="screen-flash" class="screen-flash"></div>
+
+    <!-- Toast Notification for Actions -->
+    <div id="toast-notify" class="toast-notification"></div>
+
+    <!-- Application Script Entry -->
+    <script type="module" src="./js/app.js"></script>
+</body>
+</html>
