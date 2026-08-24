@@ -74,7 +74,6 @@ Deploy your own live AR portal instance in seconds with zero configuration:
 ```text
 ├── vercel.json         # Vercel deployment config, security headers & static caching
 ├── _headers            # Cloudflare Pages security & permissions headers (camera=*)
-├── wrangler.toml       # Cloudflare Workers & Pages deployment configuration
 ├── package.json        # Standard project metadata & dev scripts
 ├── index.html          # Semantic HTML5 UI, frosted glass HUD, tag cloud & modals
 ├── styles.css          # Ultra-premium CSS3 design system with frosted glass tokens
