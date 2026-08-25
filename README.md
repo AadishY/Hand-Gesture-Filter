@@ -11,16 +11,6 @@ An ultra-responsive, real-time **Augmented Reality Hand Gesture Filter** powered
 
 ---
 
-## ⚡ 1-Click Cloud Deployments
-
-Deploy your own live AR portal instance in seconds with zero configuration:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAadishY%2FHand-Gesture-Filter)
-&nbsp;&nbsp;
-[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://dash.cloudflare.com/?to=/:account/pages/new)
-
----
-
 ## ✨ Features
 
 - **👐 Dual-Hand AR Portal Tracking**: Dynamically tracks both hands to create an elastic 4-corner perspective AR quad between your Index and Thumb fingertips ($p_1, p_2, p_3, p_4$).
