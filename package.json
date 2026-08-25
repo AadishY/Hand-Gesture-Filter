@@ -4,8 +4,7 @@
   "description": "Real-time 3D Augmented Reality Hand Gesture Filter with MediaPipe AI & 10 Curated Visual Shaders",
   "scripts": {
     "dev": "serve .",
-    "start": "serve .",
-    "build": "echo 'Static build ready'"
+    "start": "serve ."
   },
   "keywords": [
     "augmented-reality",
