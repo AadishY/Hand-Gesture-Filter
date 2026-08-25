@@ -78,26 +78,6 @@ An ultra-responsive, real-time **Augmented Reality Hand Gesture Filter** powered
     └── filters.js      # Curated 10-shader real-time pixel processing pipeline
 ```
 
----
-
-## ☁️ Deployment Instructions
-
-### 1. Deploy to Vercel
-1. Import the repository [https://github.com/AadishY/Hand-Gesture-Filter](https://github.com/AadishY/Hand-Gesture-Filter) on [Vercel Dashboard](https://vercel.com/new).
-2. Framework Preset: **Other** / **Static HTML**.
-3. Root Directory: `./` (or leave default).
-4. Click **Deploy**. Vercel will automatically apply `vercel.json` with camera permission policies and immutable caching headers.
-
-### 2. Deploy to Cloudflare Pages
-1. In the [Cloudflare Dashboard](https://dash.cloudflare.com/), go to **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
-2. Select repository `Hand-Gesture-Filter`.
-3. Build Settings:
-   - Framework preset: **None**
-   - Build output directory: `.`
-4. Click **Save and Deploy**. Cloudflare Pages will automatically read `_headers` and serve all static AR assets via Cloudflare's global edge CDN with `Permissions-Policy: camera=*`.
-
----
-
 ## 💻 Running Locally
 
 ### Prerequisites
