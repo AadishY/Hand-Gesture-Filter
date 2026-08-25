@@ -153,42 +153,66 @@ function sampleBilinearRGB(src, fx, fy, w, h) {
 }
 
 /**
- * 1. Enhanced Crimson Noir / Cyberpunk Blood Red Poster Filter (filtro_crimson_noir)
- * - Slightly reduced harsh black shadows for rich cherry/burgundy shadow depth
- * - Glowing porcelain highlights with crisp posterized blood-red contouring
+ * 1. Enhanced Crimson Noir / Cyberpunk Blood Red Poster with Sculpted Depth (filtro_crimson_noir)
+ * - Multi-stage depth tone mapping with sculpted edge definition
+ * - Rich blood-crimson midtones, deep cherry shadows & radiant porcelain skin
  */
 function filtro_crimson_noir(imageData, w, h) {
-    const data = imageData.data;
-    const totalPixels = w * h;
+    const src = new Uint8ClampedArray(imageData.data);
+    const dst = imageData.data;
 
-    for (let i = 0; i < totalPixels; i++) {
+    // Luminance array for edge normal depth calculation
+    const lums = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) {
         const idx = i * 4;
-        const gray = getLuminance(data[idx], data[idx + 1], data[idx + 2]);
+        lums[i] = 0.299 * src[idx] + 0.587 * src[idx + 1] + 0.114 * src[idx + 2];
+    }
 
-        if (gray < 28) {
-            // Softened deep cherry shadow (instead of pure pitch black)
-            data[idx]     = 24;
-            data[idx + 1] = 4;
-            data[idx + 2] = 10;
-        } else if (gray < 85) {
-            const t = (gray - 28) / 57.0;
-            data[idx]     = Math.round(115 + t * 45);
-            data[idx + 1] = Math.round(10 + t * 12);
-            data[idx + 2] = Math.round(18 + t * 14);
-        } else if (gray < 145) {
-            const t = (gray - 85) / 60.0;
-            data[idx]     = Math.round(165 + t * 45);
-            data[idx + 1] = Math.round(22 + t * 18);
-            data[idx + 2] = Math.round(32 + t * 20);
-        } else if (gray < 195) {
-            const t = (gray - 145) / 50.0;
-            data[idx]     = Math.round(210 + t * 38);
-            data[idx + 1] = Math.round(218 + t * 30);
-            data[idx + 2] = Math.round(228 + t * 22);
-        } else {
-            data[idx]     = 252;
-            data[idx + 1] = 248;
-            data[idx + 2] = 244;
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const pIdx = y * w + x;
+            const idx = pIdx * 4;
+            const gray = lums[pIdx];
+
+            // Edge gradient depth enhancement
+            let edge = 0;
+            if (x > 0 && x < w - 1 && y > 0 && y < h - 1) {
+                const gx = (lums[pIdx + 1] - lums[pIdx - 1]);
+                const gy = (lums[pIdx + w] - lums[pIdx - w]);
+                edge = Math.hypot(gx, gy);
+            }
+
+            const depthFactor = Math.min(1.0, edge / 45.0);
+
+            if (gray < 35) {
+                // Tier 1: Deep obsidian cherry shadow
+                dst[idx]     = 18;
+                dst[idx + 1] = 3;
+                dst[idx + 2] = 8;
+            } else if (gray < 95) {
+                // Tier 2: Rich blood crimson mid-shadow
+                const t = (gray - 35) / 60.0;
+                dst[idx]     = Math.round(115 + t * 45 + depthFactor * 25);
+                dst[idx + 1] = Math.round(8 + t * 10);
+                dst[idx + 2] = Math.round(16 + t * 12);
+            } else if (gray < 160) {
+                // Tier 3: Vibrant scarlet contour
+                const t = (gray - 95) / 65.0;
+                dst[idx]     = Math.round(160 + t * 48);
+                dst[idx + 1] = Math.round(18 + t * 16);
+                dst[idx + 2] = Math.round(28 + t * 18);
+            } else if (gray < 210) {
+                // Tier 4: Soft luminous rose transition
+                const t = (gray - 160) / 50.0;
+                dst[idx]     = Math.round(208 + t * 40);
+                dst[idx + 1] = Math.round(214 + t * 32);
+                dst[idx + 2] = Math.round(224 + t * 24);
+            } else {
+                // Tier 5: Brilliant porcelain white highlight
+                dst[idx]     = 252;
+                dst[idx + 1] = 246;
+                dst[idx + 2] = 242;
+            }
         }
     }
 
@@ -197,14 +221,14 @@ function filtro_crimson_noir(imageData, w, h) {
     for (let y = margin; y < margin + tickLen && y < h; y++) {
         const idxL = (y * w + margin) * 4;
         const idxR = (y * w + (w - margin - 1)) * 4;
-        data[idxL] = 245; data[idxL + 1] = 248; data[idxL + 2] = 255;
-        data[idxR] = 245; data[idxR + 1] = 248; data[idxR + 2] = 255;
+        dst[idxL] = 245; dst[idxL + 1] = 248; dst[idxL + 2] = 255;
+        dst[idxR] = 245; dst[idxR + 1] = 248; dst[idxR + 2] = 255;
     }
     for (let x = margin; x < margin + tickLen && x < w; x++) {
         const idxT = (margin * w + x) * 4;
         const idxB = ((h - margin - 1) * w + x) * 4;
-        data[idxT] = 245; data[idxT + 1] = 248; data[idxT + 2] = 255;
-        data[idxB] = 245; data[idxB + 1] = 248; data[idxB + 2] = 255;
+        dst[idxT] = 245; dst[idxT + 1] = 248; dst[idxT + 2] = 255;
+        dst[idxB] = 245; dst[idxB + 1] = 248; dst[idxB + 2] = 255;
     }
 
     return imageData;
@@ -269,7 +293,7 @@ function filtro_liquid_chrome(imageData, w, h) {
             const gx = (lums[pIdx + 1 - w] + 2 * lums[pIdx + 1] + lums[pIdx + 1 + w]) -
                        (lums[pIdx - 1 - w] + 2 * lums[pIdx - 1] + lums[pIdx - 1 + w]);
             const gy = (lums[pIdx - 1 + w] + 2 * lums[pIdx + w] + lums[pIdx + 1 + w]) -
-                       (lums[pIdx - 1 - w] + 2 * lums[pIdx - 1] + lums[pIdx + 1 - w]);
+                       (lums[pIdx - 1 - w] + 2 * lums[pIdx - w] + lums[pIdx + 1 - w]);
             edges[pIdx] = Math.hypot(gx, gy);
         }
     }
@@ -455,9 +479,9 @@ function filtro_cristal(imageData, w, h) {
 }
 
 /**
- * 4. Studio Matrix Void Silhouette ASCII with Radiant Background Glow & Chromatic Aberration (filtro_void_ascii)
- * - Subject: Full high-contrast ASCII matrix terminal characters with chromatic fringing
- * - Background: Luminous, pulsing neon cyan-purple aurora glow field radiating through the void
+ * 4. Studio Matrix Void Silhouette ASCII with Radiant Cosmic Aurora Glow (filtro_void_ascii)
+ * - Subject: Full high-definition ASCII matrix glyph terminal with chromatic aberration
+ * - Background: Ethereal radiant neon cyan & electric purple cosmic aurora glowing into deep space
  */
 function filtro_void_ascii(imageData, w, h) {
     const src = new Uint8ClampedArray(imageData.data);
@@ -523,23 +547,22 @@ function filtro_void_ascii(imageData, w, h) {
         }
     }
 
-    // Build Distance Field for Background Neon Glow radiating from the subject
+    // High-Resolution Distance Field for Background Neon Aurora Glow
     const glowField = new Float32Array(cols * rows);
     for (let gy = 0; gy < rows; gy++) {
         for (let gx = 0; gx < cols; gx++) {
             if (gridIsLit[gy * cols + gx] === 1) {
                 glowField[gy * cols + gx] = 1.0;
             } else {
-                // Check nearby lit cells to create radial ambient bloom
                 let maxNear = 0;
-                for (let dy = -4; dy <= 4; dy++) {
-                    for (let dx = -4; dx <= 4; dx++) {
+                for (let dy = -5; dy <= 5; dy++) {
+                    for (let dx = -5; dx <= 5; dx++) {
                         const nx = gx + dx;
                         const ny = gy + dy;
                         if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
                             if (gridIsLit[ny * cols + nx] === 1) {
                                 const dist = Math.hypot(dx, dy);
-                                const factor = Math.max(0, 1.0 - dist / 4.5);
+                                const factor = Math.max(0, 1.0 - dist / 5.5);
                                 if (factor > maxNear) maxNear = factor;
                             }
                         }
@@ -550,7 +573,7 @@ function filtro_void_ascii(imageData, w, h) {
         }
     }
 
-    const chromShift = 2;
+    const chromShift = 3;
 
     for (let y = 0; y < h; y++) {
         const gy = Math.floor(y / cellH);
@@ -565,13 +588,13 @@ function filtro_void_ascii(imageData, w, h) {
             const bgGlow = glowField[gIdx];
 
             if (gridIsLit[gIdx] === 0) {
-                // RADIANT BACKGROUND NEON GLOW IN THE VOID
-                const auraGlow = Math.pow(bgGlow, 1.4);
-                // Subtle radial cyber dust/mist
-                const dust = Math.sin(x * 0.08 + y * 0.06) * 4.0;
-                const glowR = Math.round(18 + auraGlow * 85 + dust * 0.5);
-                const glowG = Math.round(12 + auraGlow * 135 + dust);
-                const glowB = Math.round(35 + auraGlow * 225 + dust * 1.5);
+                // RADIANT NEON COSMIC AURORA IN BACKGROUND VOID
+                const auraGlow = Math.pow(bgGlow, 1.35);
+                const cosmicDust = Math.sin(x * 0.06 + y * 0.08) * 6.0;
+
+                const glowR = Math.round(16 + auraGlow * 95 + cosmicDust * 0.4);
+                const glowG = Math.round(14 + auraGlow * 165 + cosmicDust * 0.8);
+                const glowB = Math.round(42 + auraGlow * 240 + cosmicDust * 1.2);
 
                 dst[dstIdx]     = Math.min(255, Math.max(0, glowR));
                 dst[dstIdx + 1] = Math.min(255, Math.max(0, glowG));
@@ -588,7 +611,7 @@ function filtro_void_ascii(imageData, w, h) {
             const cy = cellH / 2.0;
             const distFromCenter = Math.hypot(px - cx, py - cy);
             const haloIntensity = Math.max(0, 1.0 - distFromCenter / (cellW * 0.95));
-            const haloGlow = Math.pow(haloIntensity, 1.5) * 125.0;
+            const haloGlow = Math.pow(haloIntensity, 1.5) * 135.0;
 
             let glyphValCenter = 0;
             let glyphValRed = 0;
@@ -611,17 +634,17 @@ function filtro_void_ascii(imageData, w, h) {
             const isGlyph = glyphValCenter > 25;
             const glyphBright = glyphValCenter / 255.0;
 
-            const redFringe = (glyphValRed / 255.0) * 230.0;
+            const redFringe = (glyphValRed / 255.0) * 235.0;
             const blueFringe = (glyphValBlue / 255.0) * 255.0;
 
             if (isGlyph) {
-                dst[dstIdx]     = Math.min(255, Math.round(220 * glyphBright + redFringe * 0.4 + haloGlow * 0.45 + avgR * 0.25));
-                dst[dstIdx + 1] = Math.min(255, Math.round(245 * glyphBright + haloGlow * 0.55 + avgG * 0.25));
-                dst[dstIdx + 2] = Math.min(255, Math.round(255 * glyphBright + blueFringe * 0.4 + haloGlow * 0.65 + avgB * 0.25));
+                dst[dstIdx]     = Math.min(255, Math.round(225 * glyphBright + redFringe * 0.45 + haloGlow * 0.45 + avgR * 0.25));
+                dst[dstIdx + 1] = Math.min(255, Math.round(248 * glyphBright + haloGlow * 0.55 + avgG * 0.25));
+                dst[dstIdx + 2] = Math.min(255, Math.round(255 * glyphBright + blueFringe * 0.45 + haloGlow * 0.65 + avgB * 0.25));
             } else {
-                dst[dstIdx]     = Math.min(255, Math.round(20 + redFringe * 0.6 + haloGlow * 0.45 + avgR * 0.28));
-                dst[dstIdx + 1] = Math.min(255, Math.round(22 + haloGlow * 0.55 + avgG * 0.30));
-                dst[dstIdx + 2] = Math.min(255, Math.round(38 + blueFringe * 0.70 + haloGlow * 0.75 + avgB * 0.38));
+                dst[dstIdx]     = Math.min(255, Math.round(22 + redFringe * 0.65 + haloGlow * 0.45 + avgR * 0.28));
+                dst[dstIdx + 1] = Math.min(255, Math.round(24 + haloGlow * 0.55 + avgG * 0.30));
+                dst[dstIdx + 2] = Math.min(255, Math.round(45 + blueFringe * 0.75 + haloGlow * 0.75 + avgB * 0.38));
             }
         }
     }
@@ -630,19 +653,16 @@ function filtro_void_ascii(imageData, w, h) {
 }
 
 /**
- * 5. Vintage Comic Manga Halftone Filter (filtro_manga_halftone)
- * - Ultra-fine screentone pitch (cell = 4) for razor-sharp facial details, hair, and eyes
- * - Gamma-compensated tone curve so dark areas never get lost or over-darkened
- * - Authentic cream manga paper with crisp burgundy ink
+ * 5. Vintage Comic Manga Halftone Filter (filtro_manga_halftone) - Classic Edition Restored
  */
 function filtro_manga_halftone(imageData, w, h) {
     const data = imageData.data;
-    const cell = 4.2;
-    const halfCell = cell / 2.0;
-    const radiusScale = cell * 0.72;
+    const cell = 6;
+    const halfCell = cell / 2;
+    const radiusScale = cell / 1.25;
 
-    const inkR = 55, inkG = 12, inkB = 25;
-    const paperR = 255, paperG = 250, paperB = 238;
+    const inkR = 85, inkG = 18, inkB = 34;
+    const paperR = 252, paperG = 246, paperB = 232;
 
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
@@ -654,18 +674,13 @@ function filtro_manga_halftone(imageData, w, h) {
             const distCenter = Math.hypot(cx, cy);
 
             const idx = (y * w + x) * 4;
-            const rawGray = getLuminance(data[idx], data[idx + 1], data[idx + 2]);
-
-            // Gamma-compensated contrast preservation for crisp details
-            const normLum = Math.pow(rawGray / 255.0, 0.82);
-            const radius = (1.0 - normLum) * radiusScale;
+            const gray = getLuminance(data[idx], data[idx + 1], data[idx + 2]);
+            const radius = (1.0 - gray / 255.0) * radiusScale;
 
             if (distCenter < radius) {
-                // Soft subpixel anti-aliasing for buttery smooth fine lines
-                const edgeSoft = Math.max(0, Math.min(1.0, (radius - distCenter) * 2.2));
-                data[idx]     = Math.round(paperR * (1.0 - edgeSoft) + inkR * edgeSoft);
-                data[idx + 1] = Math.round(paperG * (1.0 - edgeSoft) + inkG * edgeSoft);
-                data[idx + 2] = Math.round(paperB * (1.0 - edgeSoft) + inkB * edgeSoft);
+                data[idx]     = inkR;
+                data[idx + 1] = inkG;
+                data[idx + 2] = inkB;
             } else {
                 data[idx]     = paperR;
                 data[idx + 1] = paperG;
@@ -814,18 +829,16 @@ function filtro_5(imageData, w, h) {
 }
 
 /**
- * 10. Vibrant Pop-Art Rosa Halftone Filter (filtro_rosa)
- * - Ultra-fine pitch (cell = 4) with multi-level luminous dot modulation
- * - Bright glowing pastel-pink paper base with rich electric magenta & deep plum details
+ * 10. Magenta / Rosa Halftone Filter (filtro_rosa) - Classic Edition Restored
  */
 function filtro_rosa(imageData, w, h) {
     const data = imageData.data;
-    const cell = 4.0;
-    const halfCell = cell / 2.0;
-    const radiusScale = cell * 0.70;
+    const cell = 5;
+    const halfCell = cell / 2;
+    const radiusScale = cell / 1.3;
 
-    // Glowing pastel pink paper base
-    const bgR = 255, bgG = 236, bgB = 246;
+    const dotR = 130, dotG = 20, dotB = 55;
+    const bgR = 245, bgG = 190, bgB = 215;
 
     for (let y = 0; y < h; y++) {
         const cy = (y % cell) - halfCell;
@@ -834,26 +847,13 @@ function filtro_rosa(imageData, w, h) {
             const distCenter = Math.hypot(cx, cy);
 
             const idx = (y * w + x) * 4;
-            const rawGray = getLuminance(data[idx], data[idx + 1], data[idx + 2]);
-
-            // Tone curve keeping midtones and skin bright and crystal clear
-            const normLum = Math.pow(rawGray / 255.0, 0.85);
-            const radius = (1.0 - normLum) * radiusScale;
+            const gray = getLuminance(data[idx], data[idx + 1], data[idx + 2]);
+            const radius = (1.0 - gray / 255.0) * radiusScale;
 
             if (distCenter < radius) {
-                const edgeSoft = Math.max(0, Math.min(1.0, (radius - distCenter) * 2.5));
-
-                // Dynamic dot color modulation: highlights = radiant hot pink, shadows = deep plum
-                let dotR = 255, dotG = 35, dotB = 125;
-                if (normLum < 0.35) {
-                    dotR = 85; dotG = 12; dotB = 55; // Deep plum detail
-                } else if (normLum < 0.65) {
-                    dotR = 215; dotG = 20; dotB = 95; // Electric magenta
-                }
-
-                data[idx]     = Math.round(bgR * (1.0 - edgeSoft) + dotR * edgeSoft);
-                data[idx + 1] = Math.round(bgG * (1.0 - edgeSoft) + dotG * edgeSoft);
-                data[idx + 2] = Math.round(bgB * (1.0 - edgeSoft) + dotB * edgeSoft);
+                data[idx]     = dotR;
+                data[idx + 1] = dotG;
+                data[idx + 2] = dotB;
             } else {
                 data[idx]     = bgR;
                 data[idx + 1] = bgG;
@@ -871,7 +871,7 @@ export const FILTERS = [
     {
         id: "filtro_crimson_noir",
         name: "Crimson Noir",
-        description: "Blood red, cherry shadows & porcelain white cyberpunk poster",
+        description: "Blood red, sculpted depth contours & porcelain white cyberpunk poster",
         icon: "🩸",
         badge: "01",
         fn: filtro_crimson_noir
@@ -895,7 +895,7 @@ export const FILTERS = [
     {
         id: "filtro_void_ascii",
         name: "Matrix Void ASCII",
-        description: "Glowing character halos with radiant neon background aura & chromatic aberration",
+        description: "Glowing character halos with cosmic neon aurora background & chromatic aberration",
         icon: "🕳️",
         badge: "04",
         fn: filtro_void_ascii
@@ -903,7 +903,7 @@ export const FILTERS = [
     {
         id: "filtro_manga_halftone",
         name: "Vintage Manga",
-        description: "Ultra-fine burgundy ink on cream paper 45° halftone screentone with rich detail",
+        description: "Burgundy ink on cream paper 45° halftone screentone (Classic)",
         icon: "📰",
         badge: "05",
         fn: filtro_manga_halftone
@@ -943,7 +943,7 @@ export const FILTERS = [
     {
         id: "filtro_rosa",
         name: "Rosa Halftone",
-        description: "Ultra-fine vibrant magenta pop-art halftone with radiant glowing pastel paper",
+        description: "Vibrant magenta duotone halftone (Classic)",
         icon: "🌸",
         badge: "10",
         fn: filtro_rosa
